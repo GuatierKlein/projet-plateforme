@@ -1,42 +1,56 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 import numpy as np
 from pydantic import BaseModel
 
 app = FastAPI()
 
-# 1️⃣ Charger les coefficients depuis le fichier CSV
+# 1️⃣ Activer CORS pour éviter l'erreur 405
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permet toutes les origines (mettre le domaine spécifique en prod)
+    allow_credentials=True,
+    allow_methods=["*"],  # Autorise toutes les méthodes (GET, POST, OPTIONS...)
+    allow_headers=["*"],  # Autorise tous les headers
+)
+
+# 2️⃣ Charger les coefficients depuis le fichier CSV
 coefficients = pd.read_csv("coefficients.csv")
 coef_dict = dict(zip(coefficients["Variable"], coefficients["Coefficient"]))
 
-# 2️⃣ Définir le modèle de données pour l'input utilisateur
+# 3️⃣ Définir le modèle de données pour l'input utilisateur
 class PredictionInput(BaseModel):
     bathrooms: float
     accomodate: int
     bedrooms: int
     beds: int
-    country_encoding: dict  # Exemple : {"pays_USA": 1, "pays_France": 0}
+    room_type: str
+    country: str
 
-# 3️⃣ Fonction pour prédire un prix
-def predict_price_linear(input_data: PredictionInput):
-    # Commencer avec l'intercept
+# 4️⃣ Fonction pour prédire un prix
+def predict_price(input_data: PredictionInput):
     price = coef_dict["Intercept"]
     
-    # Ajouter les contributions des variables numériques
     price += coef_dict["bathrooms"] * input_data.bathrooms
     price += coef_dict["accomodate"] * input_data.accomodate
     price += coef_dict["bedrooms"] * input_data.bedrooms
     price += coef_dict["beds"] * input_data.beds
 
-    # Ajouter la contribution du pays encodé
-    for key, value in input_data.country_encoding.items():
-        if key in coef_dict:
-            price += coef_dict[key] * value
+    room_types = ["Shared room", "Hotel room"]
+    for room in room_types:
+        if input_data.room_type == room and room in coef_dict:
+            price += coef_dict[room]
+
+    countries = ["Australia", "Argentina", "Thailand", "USA", "Brazil", "France", "Japan", "Spain"]
+    for country in countries:
+        if input_data.country == country and country in coef_dict:
+            price += coef_dict[country]
 
     return price
 
-# 4️⃣ Définir l'endpoint POST pour prédire le prix
+# 5️⃣ Définir l'endpoint POST pour prédire le prix
 @app.post("/predict")
 async def predict(input_data: PredictionInput):
-    predicted_price = predict_price_linear(input_data)
+    predicted_price = predict_price(input_data)
     return {"predicted_price": round(predicted_price, 2)}
