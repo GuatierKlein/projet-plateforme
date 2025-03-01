@@ -42,7 +42,7 @@ def predict_price(input_data: PredictionInput):
         if input_data.room_type == room and room in coef_dict:
             price += coef_dict[room]
 
-    countries = ["Australia", "Argentina", "Thailand", "USA", "Brazil", "France", "Japan", "Spain"]
+    countries = ["Australie", "Argentine", "Thaïlande", "USA", "Bresil", "France", "Japon", "Espagne"]
     for country in countries:
         if input_data.country == country and country in coef_dict:
             price += coef_dict[country]
@@ -52,5 +52,6 @@ def predict_price(input_data: PredictionInput):
 # 5️⃣ Définir l'endpoint POST pour prédire le prix
 @app.post("/predict")
 async def predict(input_data: PredictionInput):
+    print("input data : ", input_data)
     predicted_price = predict_price(input_data)
     return {"predicted_price": round(predicted_price, 2)}
