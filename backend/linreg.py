@@ -12,9 +12,6 @@ df = pd.read_csv("datalinreg.csv")
 y = df['price']  # Variable cible
 X = df.drop(columns=['price'])  # Variables explicatives
 
-# 3️⃣ Encoder la variable catégorielle (One-Hot Encoding)
-# X = pd.get_dummies(X, columns=['pays'], drop_first=True)  # Supprime 1 pays pour éviter la colinéarité
-
 # 4️⃣ Normaliser les variables numériques
 scaler = StandardScaler()
 X[['bathrooms', 'accomodate', 'bedrooms', 'beds']] = scaler.fit_transform(X[['bathrooms', 'accomodate', 'bedrooms', 'beds']])
