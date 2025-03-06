@@ -6,15 +6,16 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 
 # Charger les données (exemple fictif)
-df = pd.read_csv("datalinreg.csv")
+df = pd.read_csv("datalinreg_withreviews.csv")
 
 # Séparer X et y
 y = df['price']  # Variable cible
 X = df.drop(columns=['price'])  # Variables explicatives
 
 # Normaliser les variables numériques
+data_to_normalize = ["bathrooms", "accomodate", "bedrooms", "beds", "review_scores_rating","review_scores_accuracy","review_scores_cleanliness","review_scores_checkin","review_scores_communication","review_scores_location"]
 scaler = StandardScaler()
-X[['bathrooms', 'accomodate', 'bedrooms', 'beds']] = scaler.fit_transform(X[['bathrooms', 'accomodate', 'bedrooms', 'beds']])
+X[data_to_normalize] = scaler.fit_transform(X[data_to_normalize])
 
 # Séparer en train/test
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -48,7 +49,7 @@ intercept_df = pd.DataFrame({"Variable": ["Intercept"], "Coefficient": [model.in
 coefficients = pd.concat([intercept_df, coefficients], ignore_index=True)
 
 # Sauvegarder dans un fichier CSV
-coefficients.to_csv("coefficients.csv", index=False)
+coefficients.to_csv("coefficients_withreviews.csv", index=False)
 
-print("Coefficients exportés dans 'coefficients.csv'")
+print("Coefficients exportés dans 'coefficients_withreviews.csv'")
 
