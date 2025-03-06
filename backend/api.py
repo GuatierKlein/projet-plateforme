@@ -97,7 +97,7 @@ async def predict(input_data: PredictionInput):
     return {"predicted_price": round(predicted_price, 2)}
 
 # Définir l'endpoint POST pour prédire le prix
-@app.post("/predict_with_review")
+@app.post("/predict_with_reviews")
 async def predict_review(input_data: PredictionInputWithReview):
     print("input data : ", input_data)
     predicted_price = predict_price_review(input_data)
