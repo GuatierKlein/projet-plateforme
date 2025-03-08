@@ -19,9 +19,22 @@ app.add_middleware(
 coefficients = pd.read_csv("coef_poly_noreview.csv")
 neighbourhood_prices = pd.read_csv("neighbourhood_prices.csv")
 property_prices = pd.read_csv("property_prices.csv")
-coef_dict = dict(zip(coefficients["Variable"], coefficients["Coeff."]))
+
+# Convertir les coefficients en dictionnaire avec gestion des multiples exposants
+coef_dict = {}
+for _, row in coefficients.iterrows():
+    variable = row["Variable"]
+    exponent = int(row["Exponent"]) if not pd.isna(row["Exponent"]) else 1
+    coef = row["Coeff."]
+    
+    if variable not in coef_dict:
+        coef_dict[variable] = []
+    coef_dict[variable].append((coef, exponent))
+
 neighbourhood_dict = dict(zip(neighbourhood_prices["neighbourhood"], neighbourhood_prices["Mean(price)"]))
 property_dict = dict(zip(property_prices["property_type"], property_prices["Mean(price)"]))
+
+print(coef_dict)
 
 # Définir le modèle de données pour l'input utilisateur
 class PredictionInput(BaseModel):
@@ -31,44 +44,32 @@ class PredictionInput(BaseModel):
     beds: int
     room_type: str
     country: str
-    property_type : str 
-    neighbourhood : str
+    property_type: str 
+    neighbourhood: str
 
 def get_neighbourhood_mean_price(neighbourhood):
-    return neighbourhood_dict.get(neighbourhood, neighbourhood_dict["Unknown"])
+    return neighbourhood_dict.get(neighbourhood, neighbourhood_dict.get("Unknown", 0))
 
 def get_property_type_mean_price(property_type):
-    return property_dict.get(property_type)
+    return property_dict.get(property_type, 0)
 
 def apply_polynomial_model(input_data, coef_dict):
     """Applique les coefficients d'un modèle de régression polynomiale à un ensemble de données d'entrée."""
-    price = coef_dict.get("Intercept", 0)
+    price = sum(coef for coef, _ in coef_dict.get("Intercept", [(0, 1)]))
     
-    for var, coef in coef_dict.items():
+    for var, terms in coef_dict.items():
         if var == "Intercept":
             continue
         
-        if "^" in var:  # Gestion des termes quadratiques
-            base_var, exponent = var.split("^")
-            exponent = int(exponent)
-            if base_var in input_data:
-                price += coef * (input_data[base_var] ** exponent)
-        
-        elif "*" in var:  # Gestion des termes d'interaction
-            vars_interaction = var.split("*")
-            if all(v in input_data for v in vars_interaction):
-                product = np.prod([input_data[v] for v in vars_interaction])
-                price += coef * product
-        
-        elif var in input_data:  # Gestion des termes linéaires
-            price += coef * input_data[var]
+        if var in input_data:
+            for coef, exponent in terms:
+                price += coef * (float(input_data[var]) ** exponent)
     
     return price
 
-def one_hot_encode(country, cat_list):
+def one_hot_encode(category, cat_list):
     """Encode en one-hot encoding en fonction de la liste donnée."""
-    encoding = {c: 1 if c == country else 0 for c in cat_list}
-    return encoding
+    return {c: 1 if c == category else 0 for c in cat_list}
 
 # Définir l'endpoint POST pour prédire le prix
 @app.post("/predict")
@@ -84,7 +85,8 @@ async def predict(input_data: PredictionInput):
     input_dict["neighbourhood"] = get_neighbourhood_mean_price(input_data.neighbourhood)
     input_dict["property_type"] = get_property_type_mean_price(input_data.property_type)
     
+    print(input_dict)
+    
     predicted_price = apply_polynomial_model(input_dict, coef_dict)
+    print("predicted : ", predicted_price)
     return {"predicted_price": round(predicted_price, 2)}
-
-
