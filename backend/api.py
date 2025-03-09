@@ -2,7 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 import numpy as np
-from pydantic import BaseModel
+from randomforest_reg import rf_model
+from models import PredictionInput, PredictionInputAmenities
 
 app = FastAPI()
 
@@ -35,17 +36,6 @@ neighbourhood_dict = dict(zip(neighbourhood_prices["neighbourhood"], neighbourho
 property_dict = dict(zip(property_prices["property_type"], property_prices["Mean(price)"]))
 
 print(coef_dict)
-
-# Définir le modèle de données pour l'input utilisateur
-class PredictionInput(BaseModel):
-    bathrooms: float
-    accomodate: int
-    bedrooms: int
-    beds: int
-    room_type: str
-    country: str
-    property_type: str 
-    neighbourhood: str
 
 def get_neighbourhood_mean_price(neighbourhood):
     return neighbourhood_dict.get(neighbourhood, neighbourhood_dict.get("Unknown", 0))
@@ -89,4 +79,34 @@ async def predict(input_data: PredictionInput):
     
     predicted_price = apply_polynomial_model(input_dict, coef_dict)
     print("predicted : ", predicted_price)
+    return {"predicted_price": round(predicted_price, 2)}
+
+@app.post("/predict_rf")
+async def predict_rf(input_data: PredictionInputAmenities):
+    print("Input data:", input_data)
+
+    country_list = ["Australie", "Argentine", "Thaïlande", "USA", "Bresil", "France", "Japon", "Espagne"]
+    room_types = ["Shared room", "Hotel room"]
+    input_dict = input_data.dict()
+    input_dict.update(one_hot_encode(input_data.country, country_list))
+    input_dict.update(one_hot_encode(input_data.room_type, room_types))
+    
+    input_dict["neighbourhood"] = get_neighbourhood_mean_price(input_data.neighbourhood)
+    input_dict["property_type"] = get_property_type_mean_price(input_data.property_type)
+
+    del input_dict["country"]
+    del input_dict["room_type"]
+    
+    # Convertir l'entrée en DataFrame
+    input_df = pd.DataFrame([input_dict])
+
+    # Vérifier et réorganiser les colonnes
+    expected_columns = rf_model.feature_names_in_
+    input_df = pd.DataFrame([input_dict]).reindex(columns=expected_columns, fill_value=0)
+
+    print(input_dict)
+    
+    # Faire la prédiction
+    predicted_price = rf_model.predict(input_df)[0]
+    
     return {"predicted_price": round(predicted_price, 2)}

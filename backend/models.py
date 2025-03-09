@@ -1,0 +1,49 @@
+from pydantic import BaseModel
+
+class PredictionInput(BaseModel):
+    bathrooms: float
+    accomodate: int
+    bedrooms: int
+    beds: int
+    room_type: str
+    country: str
+    property_type: str 
+    neighbourhood: str
+
+class PredictionInputAmenities(BaseModel):
+    bathrooms: float
+    accomodate: int
+    bedrooms: int
+    beds: int
+    room_type: str
+    country: str
+    property_type: str 
+    neighbourhood: str
+    parking_gratuit: int
+    parking_payant: int
+    wifi: int
+    TV: int
+    microwave: int
+    dishwasher: int
+    clothes_washer: int
+    workspace: int
+    air_conditionner: int
+    heater: int
+    elevator: int
+    self_check_in: int
+    long_term_stay: int
+    bath_tub: int
+    coffee: int
+    luggage_storage: int
+    lockbox: int
+    security_cameras: int
+    host_greets_you: int
+    pets_allowed: int
+    view: int
+    smoking: int
+    pool: int
+    board_games: int
+    gym: int
+    fireplace: int
+    hot_tub: int
+    breakfast: int
