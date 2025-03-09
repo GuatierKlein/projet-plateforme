@@ -66,12 +66,14 @@ def one_hot_encode(category, cat_list):
 async def predict(input_data: PredictionInput):
     print("input data : ", input_data)
     
+    #one hot encoding
     country_list = ["Australie", "Argentine", "Thaïlande", "USA", "Bresil", "France", "Japon", "Espagne"]
     room_types = ["Shared room", "Hotel room"]
     input_dict = input_data.dict()
     input_dict.update(one_hot_encode(input_data.country, country_list))
     input_dict.update(one_hot_encode(input_data.room_type, room_types))
     
+    #target encoding
     input_dict["neighbourhood"] = get_neighbourhood_mean_price(input_data.neighbourhood)
     input_dict["property_type"] = get_property_type_mean_price(input_data.property_type)
     
@@ -85,12 +87,14 @@ async def predict(input_data: PredictionInput):
 async def predict_rf(input_data: PredictionInputAmenities):
     print("Input data:", input_data)
 
+    #one hot encoding
     country_list = ["Australie", "Argentine", "Thaïlande", "USA", "Bresil", "France", "Japon", "Espagne"]
     room_types = ["Shared room", "Hotel room"]
     input_dict = input_data.dict()
     input_dict.update(one_hot_encode(input_data.country, country_list))
     input_dict.update(one_hot_encode(input_data.room_type, room_types))
     
+    #target encoding
     input_dict["neighbourhood"] = get_neighbourhood_mean_price(input_data.neighbourhood)
     input_dict["property_type"] = get_property_type_mean_price(input_data.property_type)
 
