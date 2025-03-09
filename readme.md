@@ -16,6 +16,7 @@ This API allows predicting rental prices using either a **Polynomial Regression 
 
 **Install dependencies**
 ```bash
+cd backend
 pip install -r requirements.txt
 ```
 
