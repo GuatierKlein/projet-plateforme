@@ -1,102 +1,117 @@
-# 🏠 Real Estate Price Prediction API
+# Price prediction for airbnb rentals
 
-This project is a **FastAPI-based machine learning application** that predicts the price of a property based on input features such as **bathrooms, bedrooms, accommodations, beds, room type, and country**.
+## Front end
 
-It includes:
-- A **FastAPI backend** for handling price prediction requests.
-- A **frontend web page** built with **HTML, CSS, and JavaScript** to interact with the API.
-- A **trained linear regression model** with coefficients stored in a CSV file.
+There are 2 webpages, they are simple HTML and vanilla js pages. You simply need to open them with your browser to open them. 
+predict.html is a page that can send request to the polynomial model, without taking amenities into account.
+predict_amenities.html is a page that can send requests to the random forest model, taking amenities into account. 
 
----
+## Backend - Price Prediction API
 
-## 🚀 Features
-✅ **FastAPI** backend to handle price predictions.  
-✅ **CORS enabled** for frontend communication.  
-✅ **Interactive web interface** to input features and get price predictions.  
-✅ **Machine Learning Model** trained and exported as coefficients.  
-✅ **JSON-based API** for easy integration.  
+This API allows predicting rental prices using either a **Polynomial Regression Model** or a **Random Forest Model**.
 
----
+## Installation & Running the API
 
-## 🐂 Project Structure
+### Usage
 
-```
-/real-estate-price-prediction/
-│── api.py           # FastAPI backend
-│── coefficients.csv # Trained model coefficients
-│── index.html       # Frontend UI
-│── script.js        # JavaScript for frontend API calls
-│── styles.css       # CSS for styling the frontend
-│── README.md        # Project documentation
-│── requirements.txt # Python dependencies
-```
-
----
-
-## 🛠️ Installation & Setup
-
-### 1️⃣ **Clone the repository**
-```sh
-git clone https://github.com/yourusername/real-estate-price-prediction.git
-cd real-estate-price-prediction
-```
-
-### 2️⃣ **Create a virtual environment (Optional but recommended)**
-```sh
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-### 3️⃣ **Install dependencies**
-```sh
+**Install dependencies**
+```bash
 pip install -r requirements.txt
 ```
 
-### 4️⃣ **Run the FastAPI Server**
-```sh
-uvicorn api:app --reload
+**Run the API**
+```bash
+cd backend
+uvicorn api:app 
 ```
-✅ The API will be available at: **http://127.0.0.1:8000**  
 
----
+### API Endpoints
 
-## 🌍 Using the Web App
-1. **Start the API server** (`uvicorn api:app --reload`).
-2. **Open `index.html` in a browser**.
-3. **Fill in the property details** and click `Predict Price`.
-4. The predicted price will be displayed below the button.
+#### `POST /predict`
+**Description**: Predicts the price using a **Polynomial Regression Model**.
 
----
-
-## 🛠️ API Endpoints
-
-### 🔹 **POST /predict**
-📝 **Predicts the price of a property.**  
-
-📥 **Request Body (JSON)**:
+🔹 **Input (JSON)**:
 ```json
 {
-    "bathrooms": 2,
-    "accomodate": 4,
-    "bedrooms": 2,
-    "beds": 3,
-    "room_type": "Shared room",
-    "country": "USA"
+    "bathrooms": 1.0,
+    "accomodate": 2,
+    "bedrooms": 1,
+    "beds": 1,
+    "room_type": "Entire home/apt",
+    "country": "France",
+    "property_type": "Apartment",
+    "neighbourhood": "Paris"
 }
 ```
 
-📤 **Response (JSON)**:
+🔹 **Output (JSON)**:
 ```json
 {
-    "predicted_price": 250.75
+    "predicted_price": 150.75
 }
 ```
 
 ---
 
-## ⚙️ Configuration (CORS, Security, etc.)
-- **CORS is enabled** to allow frontend and API communication.
-- To restrict CORS in production, update `api.py`:
-  ```python
-  allow_origins=["https://yourdomain.com"]
-  ```
+#### `POST /predict_rf`
+**Description**: Predicts the price using a **Random Forest Model**.
+
+🔹 **Input (JSON)**:
+```json
+{
+    "bathrooms": 1.0,
+    "accomodate": 2,
+    "bedrooms": 1,
+    "beds": 1,
+    "room_type": "Entire home/apt",
+    "country": "France",
+    "property_type": "Apartment",
+    "neighbourhood": "Paris",
+    "parking_gratuit": 1,
+    "parking_payant": 0,
+    "wifi": 1,
+    "TV": 1,
+    "microwave": 1,
+    "dishwasher": 0,
+    "clothes_washer": 1,
+    "workspace": 1,
+    "air_conditionner": 1,
+    "heater": 1,
+    "elevator": 1,
+    "self_check_in": 0,
+    "long_term_stay": 1,
+    "bath_tub": 0,
+    "coffee": 1,
+    "luggage_storage": 0,
+    "lockbox": 0,
+    "security_cameras": 0,
+    "host_greets_you": 0,
+    "pets_allowed": 0,
+    "view": 1,
+    "smoking": 0,
+    "pool": 0,
+    "board_games": 0,
+    "gym": 0,
+    "fireplace": 0,
+    "hot_tub": 0,
+    "breakfast": 0
+}
+```
+
+🔹 **Output (JSON)**:
+```json
+{
+    "predicted_price": 180.50
+}
+```
+
+---
+
+## Notes
+- The `/predict` endpoint uses a **Polynomial Regression Model** based on precomputed coefficients.
+- The `/predict_rf` endpoint uses a **Random Forest Model** trained on tabular data including amenities.
+
+---
+
+## Author
+Developed by **Gautier KLEIN** 
